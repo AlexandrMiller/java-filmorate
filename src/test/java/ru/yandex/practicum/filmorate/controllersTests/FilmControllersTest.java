@@ -18,7 +18,7 @@ public class FilmControllersTest {
         LocalDate date = LocalDate.of(1000,1,1);
         Film film = Film.builder().releaseDate(date).build();
         ValidException valid = assertThrows(ValidException.class, () -> filmController.createFilm(film));
-        assertEquals("Фильмов раньше 28.12.1995 года не существет",valid.getMessage());
+        assertEquals("Дата релиза не может быть раньше 28.12.1895",valid.getMessage());
     }
 
     @Test

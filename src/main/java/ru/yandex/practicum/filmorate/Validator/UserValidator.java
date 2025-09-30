@@ -16,7 +16,7 @@ public class UserValidator {
                 field.setAccessible(true);
                 Object value = field.get(object);
                 if (((LocalDate) value).isAfter(LocalDate.now())) {
-                    throw new ValidException("Нелья родитсья в будущем :)");
+                    throw new ValidException("Нелья родиться в будущем :)");
                 }
             }
         }
