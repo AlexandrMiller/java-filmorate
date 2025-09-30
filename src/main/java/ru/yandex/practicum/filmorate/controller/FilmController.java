@@ -3,9 +3,9 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exeptions.ValidException;
+import ru.yandex.practicum.filmorate.Validator.FilmValidator;
 import ru.yandex.practicum.filmorate.model.Film;
-import java.time.LocalDate;
+
 import java.util.*;
 
 @Slf4j
@@ -17,21 +17,11 @@ public class FilmController {
     private Long filmId = 1L;
 
     @PostMapping
-    public Film createFilm(@Valid @RequestBody Film film) {
+    public Film createFilm(@Valid @RequestBody Film film) throws IllegalAccessException {
         log.info("Получен запрос на создание фильма");
         Long id = generateId();
         film.setId(id);
-        if (film.getReleaseDate() != null) {
-            if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-                throw new ValidException("Фильмов раньше 28.12.1995 года не существет");
-            }
-        }
-
-        if (film.getDuration() != null) {
-            if (film.getDuration() <= 0) {
-                throw new ValidException("Продолжительность фильма должна быть больше нуля");
-            }
-        }
+        FilmValidator.validate(film);
         filmById.put(id,film);
 
         log.info("Выполнен запрос на создание фильма");

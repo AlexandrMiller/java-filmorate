@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UserControllerTests {
 
-    UserController userController = new UserController();
+    private UserController userController = new UserController();
 
     @Test
     void birthdayShouldBeReal() {

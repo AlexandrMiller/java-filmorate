@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import ru.yandex.practicum.filmorate.annotations.BirthdayValid;
 
 import java.time.LocalDate;
 
@@ -24,5 +25,7 @@ public class User {
     @Pattern(regexp = "^[^\\s]+$", message = "Логин не может содержать пробелы")
     private String login;
     private String name;
+
+    @BirthdayValid(message = "Нельзя родиться в будущем :)")
     private LocalDate birthday;
 }

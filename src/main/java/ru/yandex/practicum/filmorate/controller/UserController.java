@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.Validator.UserValidator;
 import ru.yandex.practicum.filmorate.exeptions.ValidException;
 import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
@@ -17,19 +19,14 @@ public class UserController {
     private Long userId = 1L;
 
     @PostMapping
-    public User createUser(@Valid @RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) throws IllegalAccessException {
         log.info("Получен запрос на получение пользователя");
+        UserValidator.validate(user);
         Long id = generateId();
         user.setId(id);
         String userName = user.getName();
         if (userName == null || userName.isEmpty()) {
             user.setName(user.getLogin());
-        }
-
-        if (user.getBirthday() != null) {
-            if (user.getBirthday().isAfter(LocalDate.now())) {
-                throw new ValidException("Нелья родиться в будущем :)");
-            }
         }
 
         userIdList.put(id,user);

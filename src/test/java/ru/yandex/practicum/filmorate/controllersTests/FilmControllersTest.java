@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FilmControllersTest {
 
-    FilmController filmController = new FilmController();
+    private FilmController filmController = new FilmController();
 
     @Test
     void filmDateShouldBeAfter1895() {
