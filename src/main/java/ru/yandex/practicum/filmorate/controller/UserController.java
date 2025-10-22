@@ -23,9 +23,6 @@ public class UserController {
     }
 
 
-
-
-
     @PostMapping
     public User createUser(@Valid @RequestBody User user) throws IllegalAccessException {
         log.info("Получен запрос на создание пользователя");
@@ -49,10 +46,10 @@ public class UserController {
         return userService.getUsersList();
     }
 
-    @GetMapping("/{id}/friends/{friendid}")
-    public List<Optional<User>> getMutualFriends(
+    @GetMapping("/{id}/friends/common/{friendid}")
+    public List<User> getMutualFriends(
             @PathVariable("friendid") Long userId,
-            @PathVariable("id") Long clientId) {
+            @PathVariable("id") Long clientId) throws IllegalAccessException {
         log.info("Запрос на список общих друзей");
         return userService.mutualFriends(userId,clientId);
     }
@@ -67,5 +64,10 @@ public class UserController {
     public void deleteFriend(@PathVariable("friendid") Long userId,@PathVariable("id") Long clientId) {
         log.info("Запрос на удаление из друзей");
         userService.deleteFriend(userId,clientId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriendsOfClient(@PathVariable("id")Long id) {
+      return userService.getFriendsOfClient(id);
     }
 }

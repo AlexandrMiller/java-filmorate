@@ -12,14 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class FilmControllersTest {
 
-    private InMemoryFilmStorage filmStorage;
-
-    @BeforeEach
-    void setUp() {
-        this.filmStorage = new InMemoryFilmStorage();
-
-
-    }
+    private InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
 
     @Test
     void filmDateShouldBeAfter1895() {
