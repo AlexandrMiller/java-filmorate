@@ -2,10 +2,13 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.Validator.UserValidator;
 import ru.yandex.practicum.filmorate.exeptions.ValidException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+
 import java.util.*;
 
 
@@ -13,48 +16,58 @@ import java.util.*;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private Map<Long,User> userIdList = new HashMap<>();
-    private Long userId = 1L;
+
+    private UserService userService;
+
+    @Autowired
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
+
+
+
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) throws IllegalAccessException {
-        log.info("Получен запрос на получение пользователя");
-        UserValidator.validate(user);
-        Long id = generateId();
-        user.setId(id);
-        String userName = user.getName();
-        if (userName == null || userName.isEmpty()) {
-            user.setName(user.getLogin());
-        }
-
-        userIdList.put(id,user);
+        log.info("Получен запрос на создание пользователя");
+        userService.createUser(user);
         log.info("Выполнен запрос на создание Пользователя");
-
         return user;
     }
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
-        Long id = user.getId();
-        User currentUser = userIdList.get(id);
-
-        if (Objects.isNull(currentUser)) {
-            String errorMessage = "Пользователь не найден";
-            log.error(errorMessage);
-            throw new ValidException(errorMessage);
-        }
-
-        userIdList.put(id,user);
-
+        log.info("Запрос на обновления данных пользователя");
+        userService.updateUser(user);
+        log.info("Запрос на обновления данных выполнен");
         return user;
     }
 
-    public Long generateId() {
-        return userId++;
-    }
 
     @GetMapping
     public List<User> getUsersList() {
-        return new ArrayList<>(userIdList.values());
+        log.info("Запрос на список пользователей");
+        return userService.getUsersList();
+    }
+
+    @GetMapping("/{id}/friends/{friendid}")
+    public List<Optional<User>> getMutualFriends(
+            @PathVariable("friendid") Long userId,
+            @PathVariable("id") Long clientId) {
+        log.info("Запрос на список общих друзей");
+        return userService.mutualFriends(userId,clientId);
+    }
+
+    @PutMapping("/{id}/friends/{friendid}")
+    public void addFriend(@PathVariable("friendid") Long userId, @PathVariable("id") Long clientId) {
+        log.info("Запрос на добавление в друзья");
+        userService.addFriend(userId,clientId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendid}")
+    public void deleteFriend(@PathVariable("friendid") Long userId,@PathVariable("id") Long clientId) {
+        log.info("Запрос на удаление из друзей");
+        userService.deleteFriend(userId,clientId);
     }
 }

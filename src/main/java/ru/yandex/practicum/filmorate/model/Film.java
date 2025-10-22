@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.annotations.DateAndDurationValid;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 
 @Getter
@@ -29,4 +30,5 @@ public class Film {
 
     @DateAndDurationValid(message = "Продолжительность фильма должна быть больше нуля")
     private Integer duration;
+    private Set<Long> likes;
 }
