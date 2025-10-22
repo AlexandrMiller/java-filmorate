@@ -159,7 +159,7 @@ public class UserServiceLogic implements UserService {
 
         for (Long friendId : friendIds) {
             User friend = userStorage.findById(friendId);
-            if(friend != null) {
+            if (friend != null) {
                 friends.add(friend);
             }
         }
