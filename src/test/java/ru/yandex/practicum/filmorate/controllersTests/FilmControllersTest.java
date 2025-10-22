@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.controllersTests;
 
-import org.junit.jupiter.api.BeforeEach;
+
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exeptions.ValidException;
 import ru.yandex.practicum.filmorate.model.Film;
