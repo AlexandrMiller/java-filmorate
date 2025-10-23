@@ -159,7 +159,6 @@ public class UserServiceLogic implements UserService {
 
         Set<Long> friendIds = user.getFriendsId();
         Collection<User> friends = userStorage.getUsersList();
-        
         return friends.stream()
                 .filter(u -> friendIds.contains(u.getId()))
                 .collect(Collectors.toList());
