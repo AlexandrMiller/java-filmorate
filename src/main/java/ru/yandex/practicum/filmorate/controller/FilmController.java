@@ -40,16 +40,16 @@ public class FilmController {
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("Запрос на обновление информации о фильме");
-        filmService.updateFilm(film);
+        Film updatedFilm = filmService.updateFilm(film);
         log.info("Выполен запрос на обновление фильма");
 
-        return film;
+        return updatedFilm;
     }
 
     @GetMapping("/popular")
     public List<Film> getLikes(@RequestParam(value = "count",required = false) Integer count) {
         log.info("Запрос на получение MostLikedFilms");
-       return filmService.getMostLikedFilms(count);
+        return filmService.getMostLikedFilms(count);
     }
 
     @PutMapping("/{filmid}/like/{userid}")

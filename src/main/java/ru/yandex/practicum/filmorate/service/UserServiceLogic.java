@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exeptions.ValidException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -122,7 +123,6 @@ public class UserServiceLogic implements UserService {
 
         if (userStorage.findById(userId) == null || userStorage.findById(clientId) == null) {
             throw new ValidException("Пользователь не найден");
-
         }
 
         User user = userStorage.findById(userId);
@@ -133,14 +133,17 @@ public class UserServiceLogic implements UserService {
         }
 
         Set<Long> usersFriends = user.getFriendsId();
+        Set<Long> clientsFriends = client.getFriendsId();
 
-        List<User> mutualFriends = new ArrayList<>();
-        for (Long usersId : usersFriends) {
-           if (client.getFriendsId().contains(usersId)) {
-               mutualFriends.add(userStorage.findById(usersId));
-           }
-        }
-        return mutualFriends;
+        List<Long> mutualFriends = usersFriends.stream()
+                .filter(clientsFriends::contains)
+                .collect(Collectors.toList());
+
+        List<User> allUsers = userStorage.getUsersList();
+
+        return allUsers.stream()
+                .filter(u -> mutualFriends.contains(u.getId()))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -155,15 +158,10 @@ public class UserServiceLogic implements UserService {
         }
 
         Set<Long> friendIds = user.getFriendsId();
-        Collection<User> friends = new ArrayList<>();
-
-        for (Long friendId : friendIds) {
-            User friend = userStorage.findById(friendId);
-            if (friend != null) {
-                friends.add(friend);
-            }
-        }
-        return friends;
-
+        Collection<User> friends = userStorage.getUsersList();
+        
+        return friends.stream()
+                .filter(u -> friendIds.contains(u.getId()))
+                .collect(Collectors.toList());
     }
 }
