@@ -7,6 +7,7 @@ import lombok.*;
 import ru.yandex.practicum.filmorate.annotations.BirthdayValid;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -28,4 +29,5 @@ public class User {
 
     @BirthdayValid(message = "Нельзя родиться в будущем :)")
     private LocalDate birthday;
+    private Set<Long> friendsId;
 }
