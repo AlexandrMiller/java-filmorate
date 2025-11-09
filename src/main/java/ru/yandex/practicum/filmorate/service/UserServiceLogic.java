@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.DAO.UserDbStorage;
 import ru.yandex.practicum.filmorate.exeptions.IllegalStatemantException;
 import ru.yandex.practicum.filmorate.exeptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exeptions.ValidException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -17,21 +17,21 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserServiceLogic implements UserService {
 
-  private final UserStorage userStorage;
+    private final UserDbStorage userDbStorage;
 
     @Override
     public User createUser(User user) throws IllegalAccessException {
-      return userStorage.createUser(user);
+      return userDbStorage.createUser(user);
     }
 
     @Override
     public User updateUser(User user) {
-       return userStorage.updateUser(user);
+       return userDbStorage.updateUser(user);
     }
 
     @Override
     public List<User> getUsersList() {
-       return userStorage.getUsersList();
+       return userDbStorage.getUsersList();
     }
 
 
@@ -46,34 +46,14 @@ public class UserServiceLogic implements UserService {
             throw new ValidException("ID пользователя не может быть null");
         }
 
-        if (userStorage.findById(userId) == null || userStorage.findById(clientId) == null) {
-            throw new ValidException("Пользователь не найден");
+        if (userDbStorage.findById(userId) == null || userDbStorage.findById(clientId) == null) {
+            throw new NotFoundException("Пользователь не найден");
 
         }
 
-        User user = userStorage.findById(userId);
-        User client = userStorage.findById(clientId);
-
-        Set<Long> userFriends = Optional.ofNullable(user.getFriendsId())
-                .orElseGet(HashSet::new);
-        Set<Long> clientFriends = Optional.ofNullable(client.getFriendsId())
-                .orElseGet(HashSet::new);
+        userDbStorage.addFriend(clientId,userId);
 
 
-        user.setFriendsId(userFriends);
-        client.setFriendsId(clientFriends);
-
-
-        boolean userAdded = userFriends.add(clientId);
-        boolean clientAdded = clientFriends.add(userId);
-
-
-        if (userAdded) {
-            userStorage.updateUser(user);
-        }
-        if (clientAdded) {
-            userStorage.updateUser(client);
-        }
     }
 
     @Override
@@ -86,29 +66,12 @@ public class UserServiceLogic implements UserService {
             throw new ValidException("ID пользователя не может быть null");
         }
 
-        if (userStorage.findById(userId) == null || userStorage.findById(clientId) == null) {
-            throw new ValidException("Пользователь не найден");
+        if (userDbStorage.findById(userId) == null || userDbStorage.findById(clientId) == null) {
+            throw new NotFoundException("Пользователь не найден");
 
         }
 
-        User user = userStorage.findById(userId);
-        User client = userStorage.findById(clientId);
-
-        Set<Long> friends = user.getFriendsId();
-        Set<Long> friendsClient = client.getFriendsId();
-
-        if (friends == null || friendsClient == null) {
-            return;
-        }
-
-         if (!(friendsClient.contains(userId))) {
-             throw new NotFoundException("Друг не найден");
-         }
-
-         friends.remove(clientId);
-         friendsClient.remove(userId);
-         userStorage.updateUser(user);
-         userStorage.updateUser(client);
+        userDbStorage.removeFriend(clientId,userId);
     }
 
     @Override
@@ -121,12 +84,12 @@ public class UserServiceLogic implements UserService {
             throw new ValidException("ID пользователя не может быть null");
         }
 
-        if (userStorage.findById(userId) == null || userStorage.findById(clientId) == null) {
+        if (userDbStorage.findById(userId) == null || userDbStorage.findById(clientId) == null) {
             throw new ValidException("Пользователь не найден");
         }
 
-        User user = userStorage.findById(userId);
-        User client = userStorage.findById(clientId);
+        User user = userDbStorage.findById(userId);
+        User client = userDbStorage.findById(clientId);
 
         if (user.getFriendsId() == null || client.getFriendsId() == null) {
             throw new IllegalStatemantException("Список не инициализирован");
@@ -139,7 +102,7 @@ public class UserServiceLogic implements UserService {
                 .filter(clientsFriends::contains)
                 .collect(Collectors.toList());
 
-        List<User> allUsers = userStorage.getUsersList();
+        List<User> allUsers = userDbStorage.getUsersList();
 
         return allUsers.stream()
                 .filter(u -> mutualFriends.contains(u.getId()))
@@ -148,7 +111,7 @@ public class UserServiceLogic implements UserService {
 
     @Override
     public Collection<User> getFriendsOfClient(Long id) {
-       User user = userStorage.findById(id);
+       User user = userDbStorage.findById(id);
         if (user == null) {
             throw new NotFoundException("Пользователь не найден");
         }
@@ -158,7 +121,7 @@ public class UserServiceLogic implements UserService {
         }
 
         Set<Long> friendIds = user.getFriendsId();
-        Collection<User> friends = userStorage.getUsersList();
+        Collection<User> friends = userDbStorage.getUsersList();
         return friends.stream()
                 .filter(u -> friendIds.contains(u.getId()))
                 .collect(Collectors.toList());
