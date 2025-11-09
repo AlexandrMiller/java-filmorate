@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.Validator.UserValidator;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -26,9 +27,10 @@ public class UserController {
     @PostMapping
     public User createUser(@Valid @RequestBody User user) throws IllegalAccessException {
         log.info("Получен запрос на создание пользователя");
-        userService.createUser(user);
+        UserValidator.validate(user);
+        User createdUser = userService.createUser(user);
         log.info("Выполнен запрос на создание Пользователя");
-        return user;
+        return createdUser;
     }
 
     @PutMapping
@@ -45,6 +47,7 @@ public class UserController {
         log.info("Запрос на список пользователей");
         return userService.getUsersList();
     }
+
 
     @GetMapping("/{id}/friends/common/{friendid}")
     public List<User> getMutualFriends(

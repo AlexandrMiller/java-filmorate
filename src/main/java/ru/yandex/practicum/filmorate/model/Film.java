@@ -7,14 +7,11 @@ import org.hibernate.validator.constraints.Length;
 import ru.yandex.practicum.filmorate.annotations.DateAndDurationValid;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 
-@Getter
-@Setter
-@Builder
-@EqualsAndHashCode(of = {"id"})
-@ToString
+@Data
 public class Film {
 
     private Long id;
@@ -31,4 +28,6 @@ public class Film {
     @DateAndDurationValid(message = "Продолжительность фильма должна быть больше нуля")
     private Integer duration;
     private Set<Long> likes;
+    private LinkedHashSet<Genre> genres = new LinkedHashSet<>();
+    private Mpa mpa;
 }

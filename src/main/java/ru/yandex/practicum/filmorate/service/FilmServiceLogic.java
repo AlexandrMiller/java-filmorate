@@ -3,15 +3,15 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.DAO.FilmDbStorage;
+import ru.yandex.practicum.filmorate.DAO.UserDbStorage;
+import ru.yandex.practicum.filmorate.Validator.FilmValidator;
 import ru.yandex.practicum.filmorate.exeptions.IllegalStatemantException;
 import ru.yandex.practicum.filmorate.exeptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
-
 import java.util.*;
-import java.util.stream.Collectors;
+
 
 
 @Slf4j
@@ -19,12 +19,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FilmServiceLogic implements FilmService {
 
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final UserDbStorage userStorage;
+    private final FilmDbStorage filmDbStorage;
 
     @Override
     public Film createFilm(Film film) throws IllegalAccessException {
-        filmStorage.createFilm(film);
+
+        if (film.getMpa().getId() > 6 || film.getMpa().getId() < 0) {
+            throw new NotFoundException("Такого рейтинга нет");
+        }
+
+        if (film.getGenres().stream()
+                .anyMatch(genre -> genre.getId() < 0 || genre.getId() > 7)) {
+            throw new NotFoundException("Такого жанра нет");
+        }
+
+
+        FilmValidator.validate(film);
+        filmDbStorage.createFilm(film);
         return film;
     }
 
@@ -38,7 +50,7 @@ public class FilmServiceLogic implements FilmService {
             throw new NotFoundException(errorMessage);
         }
 
-        filmStorage.save(film);
+        filmDbStorage.save(film);
 
         return film;
     }
@@ -46,10 +58,10 @@ public class FilmServiceLogic implements FilmService {
 
     @Override
     public List<Film> getFilms() {
-        if (filmStorage.getFilms().isEmpty()) {
+        if (filmDbStorage.getFilms().isEmpty()) {
             throw new NotFoundException("Список фильмов пуст");
         } else {
-            return filmStorage.getFilms();
+            return filmDbStorage.getFilms();
         }
     }
 
@@ -65,7 +77,7 @@ public class FilmServiceLogic implements FilmService {
         }
 
 
-        Film film = filmStorage.findById(filmId);
+        Film film = filmDbStorage.findById(filmId);
         User user = userStorage.findById(userId);
 
         if (film == null) {
@@ -88,8 +100,7 @@ public class FilmServiceLogic implements FilmService {
         }
 
 
-        likes.add(userId);
-        filmStorage.save(film);
+        filmDbStorage.addLike(filmId,userId);
 
         log.info("Лайк добавлен: filmId={}, userId={}", filmId, userId);
 
@@ -103,43 +114,17 @@ public class FilmServiceLogic implements FilmService {
             throw new NotFoundException("Оба ID должны быть указаны");
         }
 
-        try {
-
-            Film film = filmStorage.findById(filmId);
-
-
-            Set<Long> likes = Optional.ofNullable(film.getLikes())
-                    .orElseGet(HashSet::new);
-
-
-            if (!likes.contains(userId)) {
-                throw new NotFoundException("Пользователь " + userId + " не лайкал фильм " + filmId);
-            }
-
-
-            likes.remove(userId);
-            film.setLikes(likes);
-            filmStorage.save(film);
-
-        } catch (NotFoundException e) {
-            throw new NotFoundException("Фильм или пользователь не существует");
-        }
+        filmDbStorage.deleteLike(filmId,userId);
     }
 
     @Override
     public List<Film> getMostLikedFilms(Integer count) {
-        List<Film> films = filmStorage.getFilms();
-        if (films == null || films.isEmpty()) {
-            return Collections.emptyList();
-        }
 
-        int limit = (count != null) ? count : 10;
-
-        return films.stream()
-                .sorted(Comparator.comparing((Film f) ->
-                        f.getLikes() != null ? f.getLikes().size() : 0, Comparator.reverseOrder()))
-                .limit(limit)
-                .collect(Collectors.toList());
+        return filmDbStorage.getMostLikedFilms(count);
     }
 
+    @Override
+    public Film getFilmById(long id) {
+        return filmDbStorage.findById(id);
+    }
 }

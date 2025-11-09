@@ -11,9 +11,9 @@ import java.util.Set;
 
 @Getter
 @Setter
-@Builder
 @EqualsAndHashCode(of = {"id"})
 @ToString
+@NoArgsConstructor
 public class User {
 
     private Long id;
